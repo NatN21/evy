@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
@@ -6,10 +6,8 @@ from google.genai import types
 load_dotenv()
 
 MODELO = "gemini-3.5-flash-lite"
-INSTRUCOES = (
-    "Você é a Evy, assistente pessoal do Natan. "
-    "Responda sempre em português do Brasil, de forma clara e calorosa."
-)
+PASTA = Path(__file__).parent
+INSTRUCOES = (PASTA / "personalidade.txt").read_text(encoding="utf-8")
 
 client = genai.Client()
 
