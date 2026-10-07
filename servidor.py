@@ -34,6 +34,20 @@ def arquivos(arquivo):
     return send_from_directory(PASTA_WEB, arquivo)
 
 
+@app.get("/manifest.webmanifest")
+def manifesto():
+    return send_from_directory(
+        PASTA_WEB, "manifest.json", mimetype="application/manifest+json"
+    )
+
+
+@app.get("/sw.js")
+def service_worker():
+    resposta = send_from_directory(PASTA_WEB, "sw.js", mimetype="text/javascript")
+    resposta.headers["Cache-Control"] = "no-cache"
+    return resposta
+
+
 @app.get("/api/historico")
 def historico():
     if not autorizado():
@@ -61,5 +75,5 @@ def mensagem():
 if __name__ == "__main__":
     if not SENHA:
         raise SystemExit("Defina EVY_SENHA no arquivo .env antes de iniciar.")
-    print("Evy no ar, na porta 5000. Para parar: Ctrl+C")
+    print("Evy no ar, na porta 5000 (somente local).")
     serve(app, host="127.0.0.1", port=5000)

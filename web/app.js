@@ -85,3 +85,7 @@ formulario.addEventListener("submit", async (evento) => {
 });
 
 carregarHistorico();
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js");
+}
