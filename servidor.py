@@ -62,4 +62,4 @@ if __name__ == "__main__":
     if not SENHA:
         raise SystemExit("Defina EVY_SENHA no arquivo .env antes de iniciar.")
     print("Evy no ar, na porta 5000. Para parar: Ctrl+C")
-    serve(app, host="0.0.0.0", port=5000)
+    serve(app, host="127.0.0.1", port=5000)
