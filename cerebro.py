@@ -1,7 +1,8 @@
+import time
 from pathlib import Path
 from dotenv import load_dotenv
 from google import genai
-from google.genai import types
+from google.genai import errors, types
 
 import memoria
 
@@ -10,6 +11,9 @@ load_dotenv()
 MODELO = "gemini-3.5-flash-lite"
 PASTA = Path(__file__).parent
 PERSONALIDADE = (PASTA / "personalidade.txt").read_text(encoding="utf-8")
+
+ESPERAS = [3, 8, 15]
+CODIGOS_TEMPORARIOS = (500, 503, 504)
 
 client = genai.Client()
 
@@ -46,6 +50,13 @@ def salvar(conversa):
 
 
 def responder(conversa, mensagem):
-    resposta = conversa.send_message(mensagem)
+    for espera in ESPERAS + [None]:
+        try:
+            resposta = conversa.send_message(mensagem)
+            break
+        except errors.APIError as erro:
+            if erro.code not in CODIGOS_TEMPORARIOS or espera is None:
+                raise
+            time.sleep(espera)
     salvar(conversa)
     return resposta.text
