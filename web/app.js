@@ -162,3 +162,69 @@ botaoMemoria.addEventListener("click", () => {
 document.getElementById("fechar-memoria").addEventListener("click", () => {
   painel.hidden = true;
 });
+
+
+// ---------- Lembretes (reaproveita o painel de memória) ----------
+const botaoLembretes = document.createElement("button");
+botaoLembretes.id = "abrir-lembretes";
+botaoLembretes.type = "button";
+botaoLembretes.textContent = "Lembretes";
+(document.querySelector("header") || document.body).appendChild(botaoLembretes);
+
+const tituloPainel = painel.querySelector("strong");
+
+async function carregarLembretes() {
+  listaMemoria.textContent = "";
+  try {
+    const dados = await chamar("/api/lembretes");
+    if (dados.lembretes.length === 0) {
+      const vazio = document.createElement("li");
+      vazio.className = "vazio";
+      vazio.textContent = "Nenhum lembrete pendente.";
+      listaMemoria.appendChild(vazio);
+      return;
+    }
+    dados.lembretes.forEach((lembrete) => {
+      const item = document.createElement("li");
+      const bloco = document.createElement("span");
+      const quando = document.createElement("strong");
+      quando.textContent =
+        lembrete.descricao + (lembrete.vencido ? " (já passou)" : "");
+      if (lembrete.vencido) quando.className = "vencido";
+      const texto = document.createElement("div");
+      texto.textContent = lembrete.texto;
+      bloco.append(quando, texto);
+      const apagar = document.createElement("button");
+      apagar.type = "button";
+      apagar.textContent = "Apagar";
+      apagar.addEventListener("click", () => apagarLembrete(lembrete));
+      item.append(bloco, apagar);
+      listaMemoria.appendChild(item);
+    });
+  } catch (erro) {
+    listaMemoria.textContent = erro.message;
+  }
+}
+
+async function apagarLembrete(lembrete) {
+  if (!confirm("Apagar este lembrete?\n\n" + lembrete.texto)) return;
+  try {
+    await chamar("/api/lembretes/apagar", {
+      method: "POST",
+      body: JSON.stringify({ id: lembrete.id }),
+    });
+    await carregarLembretes();
+  } catch (erro) {
+    alert(erro.message);
+  }
+}
+
+botaoMemoria.addEventListener("click", () => {
+  tituloPainel.textContent = "O que a Evy lembra";
+});
+
+botaoLembretes.addEventListener("click", () => {
+  tituloPainel.textContent = "Seus lembretes";
+  painel.hidden = false;
+  carregarLembretes();
+});

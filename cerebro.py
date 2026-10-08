@@ -5,6 +5,7 @@ from google import genai
 from google.genai import errors, types
 
 import ferramentas
+import lembretes
 import memoria
 import tempo
 
@@ -35,9 +36,22 @@ REGRAS_DE_MEMORIA = (
     "menos que ele peça claramente. Cada fato deve ser uma frase curta e completa por si "
     "só, sem repetir o que já está na memória. Em eventos futuros, escreva a data exata "
     "(por exemplo, domingo, 11/10/2026) e não apenas o dia da semana. Depois de guardar "
-    "algo por iniciativa própria, avise em uma frase curta o que guardou. Use "
+    "algo por iniciativa própria, avise de forma breve e natural, no seu jeito de "
+    "conversar e sem tom de nota de sistema, o que guardou. Use "
     "esquecer_fato quando ele pedir para apagar algo, com o número do fato na lista. "
     "Nunca diga que guardou ou apagou algo sem ter usado a ferramenta."
+)
+
+REGRAS_DE_LEMBRETES = (
+    "Você tem duas ferramentas de lembretes: criar_lembrete e apagar_lembrete. "
+    "Use criar_lembrete quando o Natan pedir para ser lembrado de algo em um dia e hora. "
+    "Converta expressões como amanhã, daqui a 10 minutos ou sexta usando a data e a hora "
+    "do Contexto da mensagem atual. Se faltar o dia ou a hora, pergunte antes de criar. "
+    "Depois de criar, confirme de forma breve e natural, citando o dia da semana, a data "
+    "e a hora. Use apagar_lembrete, com o id da lista de lembretes pendentes, quando ele "
+    "pedir para cancelar um. Lembretes marcados como JÁ PASSOU ainda não foram avisados, "
+    "porque as notificações no celular ainda não existem; mencione-os se fizer sentido. "
+    "Nunca diga que criou ou apagou um lembrete sem ter usado a ferramenta."
 )
 
 ESPERAS = [3, 8, 15]
@@ -47,13 +61,16 @@ client = genai.Client()
 
 
 def montar_instrucoes():
-    texto = PERSONALIDADE + "\n\n" + REGRAS_DE_TEMPO + "\n\n" + REGRAS_DE_MEMORIA
+    texto = "\n\n".join(
+        [PERSONALIDADE, REGRAS_DE_TEMPO, REGRAS_DE_MEMORIA, REGRAS_DE_LEMBRETES]
+    )
     fatos = memoria.carregar_fatos()
     if fatos:
         lista = "\n".join(f"{n}. {fato}" for n, fato in enumerate(fatos, start=1))
         texto += "\n\nMemória de longo prazo sobre o Natan (fatos numerados):\n" + lista
     else:
         texto += "\n\nA memória de longo prazo ainda está vazia."
+    texto += "\n\n" + lembretes.resumo()
     return texto
 
 

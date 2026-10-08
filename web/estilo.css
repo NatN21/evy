@@ -135,3 +135,18 @@ header { position: relative; }
   font-size: 0.85rem;
   background: #9b3a2e;
 }
+
+
+/* ---------- Lembretes ---------- */
+#abrir-lembretes {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  letter-spacing: normal;
+}
+
+#lista-memoria li span { flex: 1; }
+#lista-memoria li strong.vencido { color: #9b3a2e; }

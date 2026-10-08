@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_from_directory
 from waitress import serve
 
+import lembretes
 import memoria
 import tempo
 from cerebro import criar_conversa, responder
@@ -95,6 +96,28 @@ def apagar_memoria():
         apagado = memoria.apagar_fato_por_texto(fato)
     if not apagado:
         return jsonify(erro="Essa lembrança não foi encontrada."), 404
+    return jsonify(ok=True)
+
+
+@app.get("/api/lembretes")
+def ver_lembretes():
+    if not autorizado():
+        return jsonify(erro="Senha incorreta."), 401
+    with trava:
+        itens = lembretes.para_painel()
+    return jsonify(lembretes=itens)
+
+
+@app.post("/api/lembretes/apagar")
+def apagar_lembrete():
+    if not autorizado():
+        return jsonify(erro="Senha incorreta."), 401
+    dados = request.get_json(silent=True) or {}
+    id_lembrete = str(dados.get("id", ""))
+    with trava:
+        apagado = lembretes.apagar(id_lembrete)
+    if not apagado:
+        return jsonify(erro="Esse lembrete não foi encontrado."), 404
     return jsonify(ok=True)
 
 
