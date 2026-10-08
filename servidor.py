@@ -7,6 +7,7 @@ from flask import Flask, jsonify, request, send_from_directory
 from waitress import serve
 
 import memoria
+import tempo
 from cerebro import criar_conversa, responder
 
 load_dotenv()
@@ -53,7 +54,11 @@ def historico():
     if not autorizado():
         return jsonify(erro="Senha incorreta."), 401
     with trava:
-        return jsonify(mensagens=memoria.carregar_historico())
+        mensagens = [
+            {"papel": m["papel"], "texto": tempo.remover_contexto(m["texto"])}
+            for m in memoria.carregar_historico()
+        ]
+        return jsonify(mensagens=mensagens)
 
 
 @app.post("/api/mensagem")

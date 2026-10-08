@@ -57,3 +57,23 @@ def esquecer_fato(numero):
         ARQUIVO_FATOS.write_text(texto, encoding="utf-8")
         return removido
     return None
+
+
+ARQUIVO_ESTADO = PASTA_DADOS / "estado.json"
+
+
+def carregar_ultima_mensagem():
+    if not ARQUIVO_ESTADO.exists():
+        return None
+    try:
+        dados = json.loads(ARQUIVO_ESTADO.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+    return dados.get("ultima_mensagem")
+
+
+def salvar_ultima_mensagem(momento_iso):
+    _garantir_pasta()
+    ARQUIVO_ESTADO.write_text(
+        json.dumps({"ultima_mensagem": momento_iso}), encoding="utf-8"
+    )
