@@ -89,3 +89,76 @@ carregarHistorico();
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/sw.js");
 }
+
+
+// ---------- Painel de memória ----------
+const botaoMemoria = document.createElement("button");
+botaoMemoria.id = "abrir-memoria";
+botaoMemoria.type = "button";
+botaoMemoria.textContent = "Memória";
+(document.querySelector("header") || document.body).appendChild(botaoMemoria);
+
+const painel = document.createElement("section");
+painel.id = "painel-memoria";
+painel.hidden = true;
+painel.innerHTML = `
+  <div class="cartao">
+    <div class="topo">
+      <strong>O que a Evy lembra</strong>
+      <button id="fechar-memoria" type="button">Fechar</button>
+    </div>
+    <ul id="lista-memoria"></ul>
+  </div>
+`;
+document.body.appendChild(painel);
+
+const listaMemoria = document.getElementById("lista-memoria");
+
+async function carregarMemoria() {
+  listaMemoria.textContent = "";
+  try {
+    const dados = await chamar("/api/memoria");
+    if (dados.fatos.length === 0) {
+      const vazio = document.createElement("li");
+      vazio.className = "vazio";
+      vazio.textContent = "Nada guardado ainda.";
+      listaMemoria.appendChild(vazio);
+      return;
+    }
+    dados.fatos.forEach((fato) => {
+      const item = document.createElement("li");
+      const texto = document.createElement("span");
+      texto.textContent = fato;
+      const apagar = document.createElement("button");
+      apagar.type = "button";
+      apagar.textContent = "Apagar";
+      apagar.addEventListener("click", () => apagarFato(fato));
+      item.append(texto, apagar);
+      listaMemoria.appendChild(item);
+    });
+  } catch (erro) {
+    listaMemoria.textContent = erro.message;
+  }
+}
+
+async function apagarFato(fato) {
+  if (!confirm("Apagar esta lembrança?\n\n" + fato)) return;
+  try {
+    await chamar("/api/memoria/apagar", {
+      method: "POST",
+      body: JSON.stringify({ fato }),
+    });
+    await carregarMemoria();
+  } catch (erro) {
+    alert(erro.message);
+  }
+}
+
+botaoMemoria.addEventListener("click", () => {
+  painel.hidden = false;
+  carregarMemoria();
+});
+
+document.getElementById("fechar-memoria").addEventListener("click", () => {
+  painel.hidden = true;
+});

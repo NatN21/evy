@@ -63,3 +63,75 @@ button {
   color: #fff;
   font-size: 1rem;
 }
+
+
+/* ---------- Painel de memória ---------- */
+header { position: relative; }
+
+#abrir-memoria {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  letter-spacing: normal;
+}
+
+#painel-memoria {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(43, 42, 40, 0.45);
+  z-index: 10;
+}
+
+#painel-memoria[hidden] { display: none; }
+
+#painel-memoria .cartao {
+  width: 100%;
+  max-width: 560px;
+  max-height: 80dvh;
+  overflow-y: auto;
+  padding: 16px;
+  background: #f6f1e9;
+  border-radius: 16px 16px 0 0;
+}
+
+#painel-memoria .topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+#lista-memoria {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#lista-memoria li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: #fffdf9;
+  border: 1px solid #ddd3c3;
+  border-radius: 12px;
+  line-height: 1.4;
+}
+
+#lista-memoria li.vazio { justify-content: center; color: #8a7f6d; }
+
+#lista-memoria li button {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  background: #9b3a2e;
+}

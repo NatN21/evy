@@ -77,3 +77,13 @@ def salvar_ultima_mensagem(momento_iso):
     ARQUIVO_ESTADO.write_text(
         json.dumps({"ultima_mensagem": momento_iso}), encoding="utf-8"
     )
+
+
+def apagar_fato_por_texto(texto):
+    fatos = carregar_fatos()
+    if texto not in fatos:
+        return False
+    fatos.remove(texto)
+    conteudo = "\n".join(fatos) + ("\n" if fatos else "")
+    ARQUIVO_FATOS.write_text(conteudo, encoding="utf-8")
+    return True

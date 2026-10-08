@@ -17,7 +17,6 @@ PASTA_WEB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web")
 
 app = Flask(__name__, static_folder=None)
 trava = threading.Lock()
-conversa = criar_conversa()
 
 
 def autorizado():
@@ -58,7 +57,7 @@ def historico():
             {"papel": m["papel"], "texto": tempo.remover_contexto(m["texto"])}
             for m in memoria.carregar_historico()
         ]
-        return jsonify(mensagens=mensagens)
+    return jsonify(mensagens=mensagens)
 
 
 @app.post("/api/mensagem")
@@ -75,6 +74,28 @@ def mensagem():
         except Exception as erro:
             return jsonify(erro=str(erro)), 500
     return jsonify(resposta=resposta or "(sem resposta)")
+
+
+@app.get("/api/memoria")
+def ver_memoria():
+    if not autorizado():
+        return jsonify(erro="Senha incorreta."), 401
+    with trava:
+        fatos = memoria.carregar_fatos()
+    return jsonify(fatos=fatos)
+
+
+@app.post("/api/memoria/apagar")
+def apagar_memoria():
+    if not autorizado():
+        return jsonify(erro="Senha incorreta."), 401
+    dados = request.get_json(silent=True) or {}
+    fato = str(dados.get("fato", ""))
+    with trava:
+        apagado = memoria.apagar_fato_por_texto(fato)
+    if not apagado:
+        return jsonify(erro="Essa lembrança não foi encontrada."), 404
+    return jsonify(ok=True)
 
 
 if __name__ == "__main__":
