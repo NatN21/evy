@@ -71,7 +71,7 @@ def mensagem():
         return jsonify(erro="Mensagem vazia."), 400
     with trava:
         try:
-            resposta = responder(conversa, texto)
+            resposta = responder(criar_conversa(), texto)
         except Exception as erro:
             return jsonify(erro=str(erro)), 500
     return jsonify(resposta=resposta or "(sem resposta)")
