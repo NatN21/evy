@@ -1,4 +1,4 @@
-# Evy
+# Evy 1.0
 
 Uma assistente pessoal feita do zero, para **um único usuário**, que roda num notebook em casa.
 Ela conversa por uma página web própria (instalável no celular como app), lembra do que
