@@ -1,6 +1,7 @@
 import hmac
 import os
 import threading
+import time
 
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_from_directory
@@ -8,6 +9,7 @@ from waitress import serve
 
 import lembretes
 import memoria
+import push
 import tempo
 from cerebro import criar_conversa, responder
 
@@ -121,8 +123,62 @@ def apagar_lembrete():
     return jsonify(ok=True)
 
 
+VAPID_PUBLICA = os.getenv("VAPID_PUBLICA", "")
+
+
+@app.get("/api/push/chave")
+def chave_push():
+    if not autorizado():
+        return jsonify(erro="Senha incorreta."), 401
+    return jsonify(chave=VAPID_PUBLICA)
+
+
+@app.post("/api/push/inscrever")
+def inscrever_push():
+    if not autorizado():
+        return jsonify(erro="Senha incorreta."), 401
+    inscricao = request.get_json(silent=True) or {}
+    if not inscricao.get("endpoint"):
+        return jsonify(erro="Inscrição inválida."), 400
+    push.inscrever(inscricao)
+    return jsonify(ok=True)
+
+
+@app.post("/api/push/testar")
+def testar_push():
+    if not autorizado():
+        return jsonify(erro="Senha incorreta."), 401
+    enviados = push.enviar("Evy", "Aviso de teste: está tudo funcionando.")
+    if enviados == 0:
+        return jsonify(erro="Nenhum aparelho recebeu. Ative os avisos primeiro."), 400
+    return jsonify(ok=True, enviados=enviados)
+
+
+def verificar_lembretes():
+    while True:
+        try:
+            with trava:
+                vencidos = lembretes.pendentes_para_avisar()
+            for lembrete in vencidos:
+                atrasado = lembretes.atraso_em_minutos(lembrete) > 10
+                titulo = "Lembrete atrasado" if atrasado else "Lembrete"
+                if push.enviar(titulo, lembrete["texto"]) > 0:
+                    with trava:
+                        lembretes.marcar_avisado(lembrete["id"])
+            with trava:
+                lembretes.limpar_antigos()
+        except Exception as erro:
+            print("Erro no verificador de lembretes:", erro)
+        time.sleep(20)
+
+
+def iniciar_avisos():
+    threading.Thread(target=verificar_lembretes, daemon=True).start()
+
+
 if __name__ == "__main__":
     if not SENHA:
         raise SystemExit("Defina EVY_SENHA no arquivo .env antes de iniciar.")
+    iniciar_avisos()
     print("Evy no ar, na porta 5000 (somente local).")
     serve(app, host="127.0.0.1", port=5000)

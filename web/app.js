@@ -228,3 +228,84 @@ botaoLembretes.addEventListener("click", () => {
   painel.hidden = false;
   carregarLembretes();
 });
+
+
+// ---------- Avisos (notificações push) ----------
+const controlesAvisos = document.createElement("div");
+controlesAvisos.id = "controles-avisos";
+controlesAvisos.hidden = true;
+controlesAvisos.innerHTML = `
+  <span id="estado-avisos"></span>
+  <button id="ativar-avisos" type="button">Ativar avisos</button>
+  <button id="testar-avisos" type="button">Testar</button>
+`;
+painel.querySelector(".topo").after(controlesAvisos);
+
+const estadoAvisos = document.getElementById("estado-avisos");
+
+function chaveParaBytes(chave) {
+  const preenchimento = "=".repeat((4 - (chave.length % 4)) % 4);
+  const base64 = (chave + preenchimento).replace(/-/g, "+").replace(/_/g, "/");
+  const bruto = atob(base64);
+  return Uint8Array.from(bruto, (c) => c.charCodeAt(0));
+}
+
+async function atualizarEstadoAvisos() {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    estadoAvisos.textContent = "Este navegador não suporta avisos.";
+    return;
+  }
+  if (Notification.permission === "denied") {
+    estadoAvisos.textContent = "Avisos bloqueados nas configurações do aparelho.";
+    return;
+  }
+  const registro = await navigator.serviceWorker.ready;
+  const inscricao = await registro.pushManager.getSubscription();
+  estadoAvisos.textContent = inscricao
+    ? "Avisos ativados neste aparelho."
+    : "Avisos desativados.";
+}
+
+async function ativarAvisos() {
+  try {
+    const permissao = await Notification.requestPermission();
+    if (permissao !== "granted") {
+      await atualizarEstadoAvisos();
+      return;
+    }
+    const registro = await navigator.serviceWorker.ready;
+    const { chave } = await chamar("/api/push/chave");
+    const inscricao = await registro.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: chaveParaBytes(chave),
+    });
+    await chamar("/api/push/inscrever", {
+      method: "POST",
+      body: JSON.stringify(inscricao.toJSON()),
+    });
+    await atualizarEstadoAvisos();
+  } catch (erro) {
+    estadoAvisos.textContent = "Não deu certo: " + erro.message;
+  }
+}
+
+async function testarAviso() {
+  try {
+    await chamar("/api/push/testar", { method: "POST", body: "{}" });
+    estadoAvisos.textContent = "Aviso de teste enviado.";
+  } catch (erro) {
+    estadoAvisos.textContent = "Falha no teste: " + erro.message;
+  }
+}
+
+document.getElementById("ativar-avisos").addEventListener("click", ativarAvisos);
+document.getElementById("testar-avisos").addEventListener("click", testarAviso);
+
+botaoMemoria.addEventListener("click", () => {
+  controlesAvisos.hidden = true;
+});
+
+botaoLembretes.addEventListener("click", () => {
+  controlesAvisos.hidden = false;
+  atualizarEstadoAvisos();
+});

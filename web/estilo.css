@@ -150,3 +150,18 @@ header { position: relative; }
 
 #lista-memoria li span { flex: 1; }
 #lista-memoria li strong.vencido { color: #9b3a2e; }
+
+
+/* ---------- Avisos ---------- */
+#controles-avisos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+}
+
+#controles-avisos[hidden] { display: none; }
+#controles-avisos span { flex: 1 1 100%; }
+#controles-avisos button { padding: 6px 12px; font-size: 0.85rem; }

@@ -49,8 +49,10 @@ REGRAS_DE_LEMBRETES = (
     "do Contexto da mensagem atual. Se faltar o dia ou a hora, pergunte antes de criar. "
     "Depois de criar, confirme de forma breve e natural, citando o dia da semana, a data "
     "e a hora. Use apagar_lembrete, com o id da lista de lembretes pendentes, quando ele "
-    "pedir para cancelar um. Lembretes marcados como JÁ PASSOU ainda não foram avisados, "
-    "porque as notificações no celular ainda não existem; mencione-os se fizer sentido. "
+    "pedir para cancelar um. Cada lembrete avisa o celular do Natan com uma notificação "
+    "na hora marcada, sem você precisar fazer mais nada. Os marcados como JÁ AVISADO já "
+    "tocaram; os marcados como JÁ PASSOU, AINDA NÃO AVISADO falharam, então mencione-os "
+    "se fizer sentido. "
     "Nunca diga que criou ou apagou um lembrete sem ter usado a ferramenta."
 )
 
