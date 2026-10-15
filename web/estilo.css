@@ -165,3 +165,63 @@ header { position: relative; }
 #controles-avisos[hidden] { display: none; }
 #controles-avisos span { flex: 1 1 100%; }
 #controles-avisos button { padding: 6px 12px; font-size: 0.85rem; }
+
+
+/* ---------- Menu lateral ---------- */
+#abrir-menu {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 4px 12px;
+  font-size: 1.4rem;
+  letter-spacing: normal;
+  background: transparent;
+  color: #6b5b45;
+}
+
+#fundo-menu {
+  position: fixed;
+  inset: 0;
+  background: rgba(43, 42, 40, 0.45);
+  z-index: 20;
+}
+
+#fundo-menu[hidden] { display: none; }
+
+#menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(75vw, 280px);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #f6f1e9;
+  border-right: 1px solid #ddd3c3;
+  z-index: 21;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+}
+
+#menu.aberto { transform: none; }
+
+.menu-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  letter-spacing: 0.3em;
+}
+
+.menu-topo button { background: transparent; color: #6b5b45; padding: 4px 10px; }
+
+.item-menu {
+  text-align: left;
+  background: #fffdf9;
+  color: #2b2a28;
+  border: 1px solid #ddd3c3;
+  border-radius: 12px;
+}

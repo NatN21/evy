@@ -1,4 +1,3 @@
-import hmac
 import os
 import threading
 import time
@@ -7,6 +6,7 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_from_directory
 from waitress import serve
 
+import dispositivos
 import lembretes
 import memoria
 import push
@@ -15,21 +15,17 @@ from cerebro import criar_conversa, responder
 
 load_dotenv()
 
-SENHA = os.getenv("EVY_SENHA", "")
 PASTA_WEB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web")
 
 app = Flask(__name__, static_folder=None)
 trava = threading.Lock()
 
 
+COOKIE = "evy_dispositivo"
+
+
 def autorizado():
-    enviada = request.headers.get("X-Evy-Senha", "")
-    return bool(SENHA) and hmac.compare_digest(enviada.encode(), SENHA.encode())
-
-
-@app.get("/")
-def pagina():
-    return send_from_directory(PASTA_WEB, "index.html")
+    return dispositivos.verificar(request.cookies.get(COOKIE))
 
 
 @app.get("/web/<path:arquivo>")
@@ -54,7 +50,7 @@ def service_worker():
 @app.get("/api/historico")
 def historico():
     if not autorizado():
-        return jsonify(erro="Senha incorreta."), 401
+        return jsonify(erro="Não autorizado."), 401
     with trava:
         mensagens = [
             {"papel": m["papel"], "texto": tempo.remover_contexto(m["texto"])}
@@ -66,7 +62,7 @@ def historico():
 @app.post("/api/mensagem")
 def mensagem():
     if not autorizado():
-        return jsonify(erro="Senha incorreta."), 401
+        return jsonify(erro="Não autorizado."), 401
     dados = request.get_json(silent=True) or {}
     texto = str(dados.get("mensagem", "")).strip()
     if not texto:
@@ -85,7 +81,7 @@ def mensagem():
 @app.get("/api/memoria")
 def ver_memoria():
     if not autorizado():
-        return jsonify(erro="Senha incorreta."), 401
+        return jsonify(erro="Não autorizado."), 401
     with trava:
         fatos = memoria.carregar_fatos()
     return jsonify(fatos=fatos)
@@ -94,7 +90,7 @@ def ver_memoria():
 @app.post("/api/memoria/apagar")
 def apagar_memoria():
     if not autorizado():
-        return jsonify(erro="Senha incorreta."), 401
+        return jsonify(erro="Não autorizado."), 401
     dados = request.get_json(silent=True) or {}
     fato = str(dados.get("fato", ""))
     with trava:
@@ -107,7 +103,7 @@ def apagar_memoria():
 @app.get("/api/lembretes")
 def ver_lembretes():
     if not autorizado():
-        return jsonify(erro="Senha incorreta."), 401
+        return jsonify(erro="Não autorizado."), 401
     with trava:
         itens = lembretes.para_painel()
     return jsonify(lembretes=itens)
@@ -116,7 +112,7 @@ def ver_lembretes():
 @app.post("/api/lembretes/apagar")
 def apagar_lembrete():
     if not autorizado():
-        return jsonify(erro="Senha incorreta."), 401
+        return jsonify(erro="Não autorizado."), 401
     dados = request.get_json(silent=True) or {}
     id_lembrete = str(dados.get("id", ""))
     with trava:
@@ -125,6 +121,53 @@ def apagar_lembrete():
         return jsonify(erro="Esse lembrete não foi encontrado."), 404
     return jsonify(ok=True)
 
+@app.get("/parear")
+def pagina_parear():
+    return send_from_directory(PASTA_WEB, "parear.html")
+
+
+@app.post("/api/parear")
+def parear_dispositivo():
+    dados = request.get_json(silent=True) or {}
+    nome = str(dados.get("nome", "")).strip()[:40] or "Aparelho"
+    try:
+        token = dispositivos.parear(str(dados.get("codigo", "")), nome)
+    except dispositivos.Bloqueado:
+        return jsonify(erro="Muitas tentativas. Aguarde alguns minutos."), 429
+    if not token:
+        return jsonify(erro="Código inválido ou expirado."), 401
+    resposta = jsonify(ok=True)
+    resposta.set_cookie(
+        COOKIE,
+        token,
+        max_age=60 * 60 * 24 * 365,
+        httponly=True,
+        secure=True,
+        samesite="Strict",
+    )
+    return resposta
+
+
+@app.get("/api/eu")
+def eu():
+    return jsonify(autorizado=autorizado())
+
+
+@app.get("/api/dispositivos")
+def ver_dispositivos():
+    if not autorizado():
+        return jsonify(erro="Não autorizado."), 401
+    return jsonify(dispositivos=dispositivos.listar())
+
+
+@app.post("/api/dispositivos/revogar")
+def revogar_dispositivo():
+    if not autorizado():
+        return jsonify(erro="Não autorizado."), 401
+    dados = request.get_json(silent=True) or {}
+    if not dispositivos.revogar(str(dados.get("id", ""))):
+        return jsonify(erro="Dispositivo não encontrado."), 404
+    return jsonify(ok=True)
 
 VAPID_PUBLICA = os.getenv("VAPID_PUBLICA", "")
 
@@ -132,14 +175,14 @@ VAPID_PUBLICA = os.getenv("VAPID_PUBLICA", "")
 @app.get("/api/push/chave")
 def chave_push():
     if not autorizado():
-        return jsonify(erro="Senha incorreta."), 401
+        return jsonify(erro="Não autorizado."), 401
     return jsonify(chave=VAPID_PUBLICA)
 
 
 @app.post("/api/push/inscrever")
 def inscrever_push():
     if not autorizado():
-        return jsonify(erro="Senha incorreta."), 401
+        return jsonify(erro="Não autorizado."), 401
     inscricao = request.get_json(silent=True) or {}
     if not inscricao.get("endpoint"):
         return jsonify(erro="Inscrição inválida."), 400
@@ -150,7 +193,7 @@ def inscrever_push():
 @app.post("/api/push/testar")
 def testar_push():
     if not autorizado():
-        return jsonify(erro="Senha incorreta."), 401
+        return jsonify(erro="Não autorizado."), 401
     enviados = push.enviar("Evy", "Aviso de teste: está tudo funcionando.")
     if enviados == 0:
         return jsonify(erro="Nenhum aparelho recebeu. Ative os avisos primeiro."), 400
@@ -180,8 +223,6 @@ def iniciar_avisos():
 
 
 if __name__ == "__main__":
-    if not SENHA:
-        raise SystemExit("Defina EVY_SENHA no arquivo .env antes de iniciar.")
     iniciar_avisos()
     print("Evy no ar, na porta 5000 (somente local).")
     serve(app, host="127.0.0.1", port=5000)

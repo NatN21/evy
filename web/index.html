@@ -8,15 +8,46 @@
   <meta name="theme-color" content="#6b5b45">
   <link rel="icon" href="/web/icone-192.png">
   <link rel="apple-touch-icon" href="/web/icone-192.png">
-  <link rel="stylesheet" href="/web/estilo.css">
+  <link rel="stylesheet" href="/web/estilo.css?v=2">
 </head>
 <body>
-  <header>EVY</header>
+  <header>
+    <button id="abrir-menu" type="button" aria-label="Abrir menu">&#9776;</button>
+    <span>EVY</span>
+  </header>
+
+  <div id="fundo-menu" hidden></div>
+  <aside id="menu">
+    <div class="menu-topo">
+      <strong>EVY</strong>
+      <button id="fechar-menu" type="button" aria-label="Fechar menu">&#10005;</button>
+    </div>
+    <button class="item-menu" type="button" data-painel="memoria">Memória</button>
+    <button class="item-menu" type="button" data-painel="lembretes">Lembretes</button>
+    <button class="item-menu" type="button" data-painel="dispositivos">Dispositivos</button>
+  </aside>
+
   <main id="conversa"></main>
   <form id="formulario">
     <input id="campo" type="text" placeholder="Escreva para a Evy..." autocomplete="off">
     <button type="submit">Enviar</button>
   </form>
-  <script src="/web/app.js"></script>
+
+  <section id="painel-memoria" hidden>
+    <div class="cartao">
+      <div class="topo">
+        <strong id="titulo-painel"></strong>
+        <button id="fechar-painel" type="button">Fechar</button>
+      </div>
+      <div id="controles-avisos" hidden>
+        <span id="estado-avisos"></span>
+        <button id="ativar-avisos" type="button">Ativar avisos</button>
+        <button id="testar-avisos" type="button">Testar</button>
+      </div>
+      <ul id="lista-memoria"></ul>
+    </div>
+  </section>
+
+  <script src="/web/app.js?v=2"></script>
 </body>
 </html>

@@ -2,14 +2,8 @@ const conversa = document.getElementById("conversa");
 const formulario = document.getElementById("formulario");
 const campo = document.getElementById("campo");
 
-function pegarSenha() {
-  let senha = localStorage.getItem("evy_senha");
-  if (!senha) {
-    senha = prompt("Senha da Evy:") || "";
-    localStorage.setItem("evy_senha", senha);
-  }
-  return senha;
-}
+// A senha não é mais usada no navegador: quem autentica é o cookie do aparelho.
+localStorage.removeItem("evy_senha");
 
 function rolarParaOFim() {
   conversa.scrollTop = conversa.scrollHeight;
@@ -35,14 +29,12 @@ function mostrarErro(texto) {
 async function chamar(url, opcoes = {}) {
   const resposta = await fetch(url, {
     ...opcoes,
-    headers: {
-      "Content-Type": "application/json",
-      "X-Evy-Senha": pegarSenha(),
-    },
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
   });
   if (resposta.status === 401) {
-    localStorage.removeItem("evy_senha");
-    throw new Error("Senha incorreta. Recarregue a página e tente de novo.");
+    location.href = "/parear";
+    throw new Error("Aparelho não pareado.");
   }
   const dados = await resposta.json();
   if (!resposta.ok) {
@@ -51,6 +43,7 @@ async function chamar(url, opcoes = {}) {
   return dados;
 }
 
+// ---------- Chat ----------
 async function carregarHistorico() {
   try {
     const dados = await chamar("/api/historico");
@@ -84,56 +77,60 @@ formulario.addEventListener("submit", async (evento) => {
   }
 });
 
-carregarHistorico();
+// ---------- Menu lateral ----------
+const menu = document.getElementById("menu");
+const fundoMenu = document.getElementById("fundo-menu");
 
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/sw.js");
+function abrirMenu() {
+  menu.classList.add("aberto");
+  fundoMenu.hidden = false;
 }
 
+function fecharMenu() {
+  menu.classList.remove("aberto");
+  fundoMenu.hidden = true;
+}
 
-// ---------- Painel de memória ----------
-const botaoMemoria = document.createElement("button");
-botaoMemoria.id = "abrir-memoria";
-botaoMemoria.type = "button";
-botaoMemoria.textContent = "Memória";
-(document.querySelector("header") || document.body).appendChild(botaoMemoria);
+document.getElementById("abrir-menu").addEventListener("click", abrirMenu);
+document.getElementById("fechar-menu").addEventListener("click", fecharMenu);
+fundoMenu.addEventListener("click", fecharMenu);
 
-const painel = document.createElement("section");
-painel.id = "painel-memoria";
-painel.hidden = true;
-painel.innerHTML = `
-  <div class="cartao">
-    <div class="topo">
-      <strong>O que a Evy lembra</strong>
-      <button id="fechar-memoria" type="button">Fechar</button>
-    </div>
-    <ul id="lista-memoria"></ul>
-  </div>
-`;
-document.body.appendChild(painel);
-
+// ---------- Painéis ----------
+const painel = document.getElementById("painel-memoria");
+const tituloPainel = document.getElementById("titulo-painel");
 const listaMemoria = document.getElementById("lista-memoria");
+const controlesAvisos = document.getElementById("controles-avisos");
+const estadoAvisos = document.getElementById("estado-avisos");
 
+function itemVazio(texto) {
+  const vazio = document.createElement("li");
+  vazio.className = "vazio";
+  vazio.textContent = texto;
+  return vazio;
+}
+
+function botaoApagar(rotulo, aoClicar) {
+  const botao = document.createElement("button");
+  botao.type = "button";
+  botao.textContent = rotulo;
+  botao.addEventListener("click", aoClicar);
+  return botao;
+}
+
+// Memória
 async function carregarMemoria() {
   listaMemoria.textContent = "";
   try {
     const dados = await chamar("/api/memoria");
     if (dados.fatos.length === 0) {
-      const vazio = document.createElement("li");
-      vazio.className = "vazio";
-      vazio.textContent = "Nada guardado ainda.";
-      listaMemoria.appendChild(vazio);
+      listaMemoria.appendChild(itemVazio("Nada guardado ainda."));
       return;
     }
     dados.fatos.forEach((fato) => {
       const item = document.createElement("li");
       const texto = document.createElement("span");
       texto.textContent = fato;
-      const apagar = document.createElement("button");
-      apagar.type = "button";
-      apagar.textContent = "Apagar";
-      apagar.addEventListener("click", () => apagarFato(fato));
-      item.append(texto, apagar);
+      item.append(texto, botaoApagar("Apagar", () => apagarFato(fato)));
       listaMemoria.appendChild(item);
     });
   } catch (erro) {
@@ -154,34 +151,13 @@ async function apagarFato(fato) {
   }
 }
 
-botaoMemoria.addEventListener("click", () => {
-  painel.hidden = false;
-  carregarMemoria();
-});
-
-document.getElementById("fechar-memoria").addEventListener("click", () => {
-  painel.hidden = true;
-});
-
-
-// ---------- Lembretes (reaproveita o painel de memória) ----------
-const botaoLembretes = document.createElement("button");
-botaoLembretes.id = "abrir-lembretes";
-botaoLembretes.type = "button";
-botaoLembretes.textContent = "Lembretes";
-(document.querySelector("header") || document.body).appendChild(botaoLembretes);
-
-const tituloPainel = painel.querySelector("strong");
-
+// Lembretes
 async function carregarLembretes() {
   listaMemoria.textContent = "";
   try {
     const dados = await chamar("/api/lembretes");
     if (dados.lembretes.length === 0) {
-      const vazio = document.createElement("li");
-      vazio.className = "vazio";
-      vazio.textContent = "Nenhum lembrete pendente.";
-      listaMemoria.appendChild(vazio);
+      listaMemoria.appendChild(itemVazio("Nenhum lembrete pendente."));
       return;
     }
     dados.lembretes.forEach((lembrete) => {
@@ -194,11 +170,7 @@ async function carregarLembretes() {
       const texto = document.createElement("div");
       texto.textContent = lembrete.texto;
       bloco.append(quando, texto);
-      const apagar = document.createElement("button");
-      apagar.type = "button";
-      apagar.textContent = "Apagar";
-      apagar.addEventListener("click", () => apagarLembrete(lembrete));
-      item.append(bloco, apagar);
+      item.append(bloco, botaoApagar("Apagar", () => apagarLembrete(lembrete)));
       listaMemoria.appendChild(item);
     });
   } catch (erro) {
@@ -219,30 +191,79 @@ async function apagarLembrete(lembrete) {
   }
 }
 
-botaoMemoria.addEventListener("click", () => {
-  tituloPainel.textContent = "O que a Evy lembra";
-});
+// Dispositivos
+async function carregarDispositivos() {
+  listaMemoria.textContent = "";
+  try {
+    const dados = await chamar("/api/dispositivos");
+    dados.dispositivos.forEach((d) => {
+      const item = document.createElement("li");
+      const bloco = document.createElement("span");
+      const nome = document.createElement("strong");
+      nome.textContent = d.nome;
+      const uso = document.createElement("div");
+      uso.textContent =
+        "Último uso: " +
+        new Date(d.ultimo_uso * 1000).toLocaleString("pt-BR", {
+          dateStyle: "short",
+          timeStyle: "short",
+        });
+      bloco.append(nome, uso);
+      item.append(bloco, botaoApagar("Revogar", () => revogarDispositivo(d)));
+      listaMemoria.appendChild(item);
+    });
+    listaMemoria.appendChild(
+      itemVazio("Para parear outro aparelho, rode  venv/bin/python parear.py  no YhwBook.")
+    );
+  } catch (erro) {
+    listaMemoria.textContent = erro.message;
+  }
+}
 
-botaoLembretes.addEventListener("click", () => {
-  tituloPainel.textContent = "Seus lembretes";
+async function revogarDispositivo(d) {
+  const aviso =
+    "Revogar este aparelho?\n\n" +
+    d.nome +
+    "\n\nSe for o aparelho que você está usando, será preciso parear de novo.";
+  if (!confirm(aviso)) return;
+  try {
+    await chamar("/api/dispositivos/revogar", {
+      method: "POST",
+      body: JSON.stringify({ id: d.id }),
+    });
+    await carregarDispositivos();
+  } catch (erro) {
+    alert(erro.message);
+  }
+}
+
+const paineis = {
+  memoria: { titulo: "O que a Evy lembra", carregar: carregarMemoria, avisos: false },
+  lembretes: { titulo: "Seus lembretes", carregar: carregarLembretes, avisos: true },
+  dispositivos: { titulo: "Dispositivos pareados", carregar: carregarDispositivos, avisos: false },
+};
+
+function abrirPainel(nome) {
+  const p = paineis[nome];
+  tituloPainel.textContent = p.titulo;
+  controlesAvisos.hidden = !p.avisos;
   painel.hidden = false;
-  carregarLembretes();
+  p.carregar();
+  if (p.avisos) atualizarEstadoAvisos();
+}
+
+document.querySelectorAll(".item-menu").forEach((botao) => {
+  botao.addEventListener("click", () => {
+    fecharMenu();
+    abrirPainel(botao.dataset.painel);
+  });
 });
 
+document.getElementById("fechar-painel").addEventListener("click", () => {
+  painel.hidden = true;
+});
 
 // ---------- Avisos (notificações push) ----------
-const controlesAvisos = document.createElement("div");
-controlesAvisos.id = "controles-avisos";
-controlesAvisos.hidden = true;
-controlesAvisos.innerHTML = `
-  <span id="estado-avisos"></span>
-  <button id="ativar-avisos" type="button">Ativar avisos</button>
-  <button id="testar-avisos" type="button">Testar</button>
-`;
-painel.querySelector(".topo").after(controlesAvisos);
-
-const estadoAvisos = document.getElementById("estado-avisos");
-
 function chaveParaBytes(chave) {
   const preenchimento = "=".repeat((4 - (chave.length % 4)) % 4);
   const base64 = (chave + preenchimento).replace(/-/g, "+").replace(/_/g, "/");
@@ -301,11 +322,9 @@ async function testarAviso() {
 document.getElementById("ativar-avisos").addEventListener("click", ativarAvisos);
 document.getElementById("testar-avisos").addEventListener("click", testarAviso);
 
-botaoMemoria.addEventListener("click", () => {
-  controlesAvisos.hidden = true;
-});
+// ---------- Início ----------
+carregarHistorico();
 
-botaoLembretes.addEventListener("click", () => {
-  controlesAvisos.hidden = false;
-  atualizarEstadoAvisos();
-});
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js");
+}

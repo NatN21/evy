@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parear aparelho · Evy</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #111; color: #eee;
+         display: flex; min-height: 100vh; align-items: center; justify-content: center; margin: 0; }
+  form { width: min(90vw, 340px); display: flex; flex-direction: column; gap: 12px; }
+  h1 { font-weight: 400; margin: 0 0 8px; }
+  input, button { font-size: 1.1rem; padding: 12px; border-radius: 8px; border: 1px solid #444;
+                  background: #1c1c1c; color: #eee; }
+  input[name=codigo] { letter-spacing: 3px; text-transform: uppercase; text-align: center; }
+  button { background: #3b6; border: 0; color: #fff; cursor: pointer; }
+  #erro { color: #f77; min-height: 1.2em; margin: 0; }
+</style>
+</head>
+<body>
+<form id="f">
+  <h1>Parear aparelho</h1>
+  <input name="nome" placeholder="Nome do aparelho (ex: Redmi)" maxlength="40" autocomplete="off">
+  <input name="codigo" placeholder="XXXX-XXXX" maxlength="9" autocomplete="off" required>
+  <p id="erro"></p>
+  <button>Parear</button>
+</form>
+<script>
+document.getElementById("f").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const erro = document.getElementById("erro");
+  erro.textContent = "";
+  const r = await fetch("/api/parear", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nome: e.target.nome.value, codigo: e.target.codigo.value }),
+  });
+  const d = await r.json().catch(() => ({}));
+  if (r.ok) { location.href = "/"; } else { erro.textContent = d.erro || "Erro ao parear."; }
+});
+</script>
+</body>
+</html>
