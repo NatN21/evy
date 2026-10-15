@@ -53,6 +53,7 @@ lembretes.py       lembretes
 push.py            notificações Web Push
 tempo.py           fuso horário e contexto temporal
 terminal.py        interface de terminal (depuração)
+backup_manual.py   backup manual criptografado e validação da restauração
 personalidade.txt  identidade da assistente
 web/               página, estilos, app.js, service worker e manifesto
 ```
@@ -81,6 +82,7 @@ pip install -r requirements.txt
 
 python terminal.py     # conversar pelo terminal
 python servidor.py     # subir o servidor (porta 5000, somente localhost)
+python backup_manual.py criar  # backup manual; requer /var/backups/evy preparado
 ```
 
 Em produção, o servidor roda como serviço `systemd` e é publicado na rede privada com
@@ -96,7 +98,7 @@ Em produção, o servidor roda como serviço `systemd` e é publicado na rede pr
 ## Roadmap
 
 - [x] Conversa, personalidade, memória, tempo, lembretes, notificações, app instalável
-- [ ] Backup automático dos dados e marca `v1.0`
+- [ ] Validar a primeira coleta manual, automatizar o backup dos dados e marcar `v1.0`
 - [ ] Integração com calendário (leitura primeiro; escrita com confirmação)
 - [ ] Memória estruturada em SQLite, com busca e atualização de fatos
 - [ ] Arquivo de conversas antigas com busca

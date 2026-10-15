@@ -74,8 +74,11 @@ def mensagem():
     with trava:
         try:
             resposta = responder(criar_conversa(), texto)
-        except Exception as erro:
-            return jsonify(erro=str(erro)), 500
+        except Exception:
+            return (
+                jsonify(erro="Não consegui responder agora. Tente novamente mais tarde."),
+                500,
+            )
     return jsonify(resposta=resposta or "(sem resposta)")
 
 

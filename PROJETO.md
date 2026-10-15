@@ -6,7 +6,7 @@
 
 - **Dono do projeto:** Natan
 - **Atualizado em:** outubro de 2026
-- **Versão:** pré-1.0 (miolo pronto; faltam backup, marca `v1.0` e validação final)
+- **Versão:** pré-1.0 (procedimento manual de backup implementado; faltam preparar o destino, validar a primeira coleta, marca `v1.0` e validação final)
 
 ---
 
@@ -46,7 +46,7 @@ programação, Linux e arquitetura de sistemas, construindo tijolo por tijolo.
 
 ### Pendências para fechar a 1.0
 
-1. **Backup automático** de `dados/` e `.env` para o notebook principal (hoje só existem no servidor, fora do Git de propósito).
+1. **Validar o backup manual** de `dados/` e `.env` no armazenamento interno do servidor; a automação diária continua pendente.
 2. **Marcar a versão no Git:** `git tag v1.0`.
 3. **Teste do tempo:** contar à Evy um compromisso futuro, voltar depois da data com um simples "oi" e ver se ela retoma o assunto.
 4. Limpar inscrições duplicadas de push, se houver (ver seção 11).
@@ -136,6 +136,7 @@ evy/
 ├── push.py              # inscrições e envio de notificações (Web Push / VAPID)
 ├── tempo.py             # fuso, dias da semana, linha [Contexto: ...]
 ├── terminal.py          # interface de terminal (debug); comandos /lembrar, /fatos...
+├── backup_manual.py     # backup local criptografado e validação em diretório temporário
 ├── personalidade.txt    # quem a Evy é (identidade e jeito de falar)
 ├── requirements.txt
 ├── .gitignore
@@ -240,6 +241,26 @@ tailscale serve status                     # endereço HTTPS da Evy
 - **Não** usar `terminal.py` e o servidor ao mesmo tempo: os dois gravam o mesmo histórico.
 - Antes de cada commit: `git status` e conferir que `.env` e `dados/` **não** aparecem.
 - Ambiente: `cd ~/evy && source venv/bin/activate`.
+
+### Backup manual
+
+O script `backup_manual.py` cria um arquivo `tar.zst` criptografado com GPG fora do
+checkout, incluindo `.env`, `dados/`, as chaves VAPID e as inscrições push. Antes da
+coleta, ele verifica o serviço `evy`, interrompe-o se estiver ativo, recusa a coleta se
+encontrar `servidor.py` ou `terminal.py` concorrente e restaura o serviço ao terminar.
+
+Pré-requisito: o diretório `/var/backups/evy/` deve existir, pertencer ao usuário da
+Evy e ter permissão `700`. O script não cria esse diretório automaticamente.
+
+```bash
+python3 backup_manual.py criar
+python3 backup_manual.py verificar /var/backups/evy/ARQUIVO.gpg
+```
+
+O primeiro comando solicita a senha do GPG interativamente, valida a descriptografia e
+os hashes antes de publicar o arquivo definitivo. A senha deve ser guardada fora do
+servidor. A primeira coleta real ainda não foi executada; a automação diária será
+considerada somente depois da validação manual e do teste de restauração.
 
 ---
 
