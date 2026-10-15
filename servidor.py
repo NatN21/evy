@@ -20,6 +20,10 @@ PASTA_WEB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web")
 app = Flask(__name__, static_folder=None)
 trava = threading.Lock()
 
+@app.get("/")
+def pagina_inicial():
+    return send_from_directory(PASTA_WEB, "index.html")
+
 
 COOKIE = "evy_dispositivo"
 
