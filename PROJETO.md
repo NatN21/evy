@@ -46,14 +46,12 @@ programação, Linux e arquitetura de sistemas, construindo tijolo por tijolo.
 
 ### Pendências para fechar a 1.0
 
-1. **Validar o backup manual** de `dados/` e `.env` no armazenamento interno do servidor; a automação diária continua pendente.
-2. **Marcar a versão no Git:** `git tag v1.0`.
-3. **Teste do tempo:** contar à Evy um compromisso futuro, voltar depois da data com um simples "oi" e ver se ela retoma o assunto.
-4. Limpar inscrições duplicadas de push, se houver (ver seção 11).
+Sem mais pendendencias
 
 ### Depois da 1.0
 
 - **7e — Calendário:** leitura primeiro; escrita só com confirmação do dono (ver seção 13).
+- Abandonar a VPN (Tailscaler) e substituír por outro método de autenticação.
 - Redesenho da página e afinamento do tom da personalidade (a cargo do dono).
 - **Evy 2:** cérebro com memória estruturada em SQLite (ver seção 13).
 

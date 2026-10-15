@@ -98,7 +98,7 @@ Em produção, o servidor roda como serviço `systemd` e é publicado na rede pr
 ## Roadmap
 
 - [x] Conversa, personalidade, memória, tempo, lembretes, notificações, app instalável
-- [ ] Validar a primeira coleta manual, automatizar o backup dos dados e marcar `v1.0`
+- [x] Validar a primeira coleta manual, automatizar o backup dos dados e marcar `v1.0`
 - [ ] Integração com calendário (leitura primeiro; escrita com confirmação)
 - [ ] Memória estruturada em SQLite, com busca e atualização de fatos
 - [ ] Arquivo de conversas antigas com busca
