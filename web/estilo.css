@@ -1,72 +1,238 @@
+@import url('https://fonts.googleapis.com/css2?family=Alice&display=swap');
+
 * { box-sizing: border-box; }
+
+/* =========================================================
+   TEMAS
+   - Sem atributo (ou data-tema="sistema"): segue o aparelho
+   - data-tema="claro"  : força o claro
+   - data-tema="escuro" : força o escuro
+   ========================================================= */
+
+:root {
+  /* Paleta de marca (iguais nos dois temas) */
+  --ambar: #ffb224;
+  --terracota: #9b3a2e;
+  --verde: #83ac31;
+  --marrom: #493629;
+  --marrom-claro: #6b5b45;
+  --marrom-escuro: #271e15;
+  --bege-fundo: #faeee0;
+  --bege-escuro: #eedcc6;
+  --bege-claro: #fcf6ef;
+  --couro: #6b5b45;
+  --papel-velho: #e4d9c6;
+
+  /* Medidas */
+  --largura-chat: 760px;
+  --largura-menu: 280px;
+  --tamanho-botao: 40px;
+
+  /* Tema CLARO (padrão) */
+  color-scheme: light;
+  --fundo: var(--bege-fundo);
+  --superficie: #f6f1e9;      /* menu, painéis */
+  --superficie-2: #fffdf9;    /* campo, itens de lista */
+  --borda: #ddd3c3;
+  --texto: var(--marrom-escuro);
+  --texto-suave: #76695a;
+  --balao-user: var(--bege-escuro);
+  --balao-model: var(--bege-claro);
+  --botao: var(--couro);
+  --botao-texto: #fff;
+  --perigo: var(--terracota);
+  --erro: var(--terracota);
+  --overlay: rgba(43, 42, 40, 0.45);
+  --sombra-verde: rgba(131, 172, 49, 0.35);
+}
+
+/* Tema ESCURO forçado pelo usuário */
+:root[data-tema="escuro"] {
+  color-scheme: dark;
+  --fundo: #1c1510;
+  --superficie: #271e15;
+  --superficie-2: #33271c;
+  --borda: #46382b;
+  --texto: #f0e4d2;
+  --texto-suave: #b5a58f;
+  --balao-user: #4a3626;
+  --balao-model: #2a2018;
+  --botao: #6b5b45;
+  --botao-texto: #fff;
+  --perigo: #9b3a2e;
+  --erro: #e8917f;
+  --overlay: rgba(0, 0, 0, 0.6);
+  --sombra-verde: rgba(131, 172, 49, 0.25);
+}
+
+/* Tema ESCURO automático (só quando o usuário NÃO forçou claro/escuro) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]):not([data-tema="escuro"]) {
+    color-scheme: dark;
+    --fundo: #1c1510;
+    --superficie: #271e15;
+    --superficie-2: #33271c;
+    --borda: #46382b;
+    --texto: #f0e4d2;
+    --texto-suave: #b5a58f;
+    --balao-user: #4a3626;
+    --balao-model: #2a2018;
+    --botao: #6b5b45;
+    --botao-texto: #fff;
+    --perigo: #9b3a2e;
+    --erro: #e8917f;
+    --overlay: rgba(0, 0, 0, 0.6);
+    --sombra-verde: rgba(131, 172, 49, 0.25);
+  }
+}
+
+/* =========================================================
+   BASE
+   ========================================================= */
 
 body {
   margin: 0;
   height: 100dvh;
   display: flex;
   flex-direction: column;
-  font-family: Georgia, "Times New Roman", serif;
-  background: #f6f1e9;
-  color: #2b2a28;
+  font-family: Alice, "Times New Roman", serif;
+  font-weight: 400; /* a Alice só existe no peso 400 */
+  background: var(--fundo);
+  color: var(--texto);
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
+/* Botões e campos NÃO herdam a fonte sozinhos */
+button, input, textarea { font-family: inherit; }
+
 header {
+  position: relative;
   padding: 14px 16px;
   text-align: center;
   font-size: 1.1rem;
   letter-spacing: 0.3em;
-  border-bottom: 1px solid #ddd3c3;
+  font-weight: 400;
+  border-bottom: 1px solid var(--borda);
 }
+
+/* =========================================================
+   CHAT
+   A margem lateral é calculada: em telas pequenas vale 16px,
+   em telas grandes o conteúdo fica numa coluna de até
+   --largura-chat, centralizada. A barra de rolagem continua
+   na borda da tela.
+   ========================================================= */
+
+:root { --margem-chat: max(16px, calc((100% - var(--largura-chat)) / 2)); }
 
 #conversa {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 16px var(--margem-chat);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 15px;
 }
 
 .mensagem {
   max-width: 85%;
-  padding: 10px 14px;
-  border-radius: 14px;
-  line-height: 1.45;
+  padding: 14px 16px;
+  line-height: 1.6;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
-.user { align-self: flex-end; background: #e4d9c6; }
-.model { align-self: flex-start; background: #fffdf9; border: 1px solid #ddd3c3; }
-.erro { align-self: center; color: #9b3a2e; font-size: 0.9rem; text-align: center; }
+/* Balões com "ponta": o canto inferior do lado de quem fala fica reto */
+.mensagem.user  { border-radius: 18px 18px 0 18px; line-height: 1.4; }
+.mensagem.model { border-radius: 18px 18px 18px 0; }
+
+.user  { align-self: flex-end;   background: var(--balao-user); }
+.model { align-self: flex-start; background: var(--balao-model); border: 1px solid var(--borda); }
+.erro  { align-self: center; color: var(--erro); font-size: 0.9rem; text-align: center; }
+
+/* =========================================================
+   FORMULÁRIO: campo + botão enviar
+   O botão fica DENTRO do campo, ancorado no canto inferior
+   direito (continua lá quando o campo cresce).
+   ========================================================= */
 
 #formulario {
+  position: relative;
   display: flex;
-  gap: 8px;
-  padding: 10px 12px;
-  border-top: 1px solid #ddd3c3;
+  align-items: flex-end;
+  padding: 12px var(--margem-chat);
+  border-top: 1px solid var(--borda);
 }
 
 #campo {
   flex: 1;
-  padding: 10px 14px;
+  min-width: 0;
+  padding: 14px calc(var(--tamanho-botao) + 22px) 14px 18px; /* espaço p/ o botão */
   font-size: 1rem;
-  border: 1px solid #ddd3c3;
+  line-height: 1.4;
+  color: var(--texto);
+  background: var(--superficie-2);
+  border: 1px solid var(--borda);
   border-radius: 20px;
-  background: #fffdf9;
+
+  /* cresce com o texto, até o limite; depois rola */
+  resize: none;
+  max-height: 9.5rem;          /* ~5 linhas */
+  overflow-y: auto;
+  field-sizing: content;       /* navegadores novos: cresce sozinho (o JS cobre os demais) */
+}
+
+#campo::placeholder { color: var(--texto-suave); opacity: 0.8; }
+
+#campo:focus {
+  outline: none;
+  border-color: var(--ambar);
+  box-shadow: 0 0 0 3px rgba(255, 178, 36, 0.22);
 }
 
 button {
-  padding: 10px 16px;
+  padding: 6px 14px;
   border: none;
-  border-radius: 20px;
-  background: #6b5b45;
-  color: #fff;
-  font-size: 1rem;
+  border-radius: 15px;
+  background: var(--botao);
+  font-size: 1.45rem;
+  color: var(--botao-texto);
+  cursor: pointer;
 }
 
+button:focus-visible {
+  outline: 2px solid var(--ambar);
+  outline-offset: 2px;
+}
 
-/* ---------- Painel de memória ---------- */
-header { position: relative; }
+#enviar {
+  position: absolute;
+  right: calc(var(--margem-chat) + 8px);
+  bottom: 18px;
+  width: var(--tamanho-botao);
+  height: var(--tamanho-botao);
+  padding: 0;
+  display: grid;
+  place-items: center;
+  font-size: 1.35rem;
+  line-height: 1;
+  border-radius: 12px;
+  background: var(--verde);
+  color: var(--marrom-escuro);   /* seta escura: mais contraste sobre o verde lima */
+  box-shadow: 0 2px 8px var(--sombra-verde), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+}
+
+#enviar svg { display: block; }
+#campo:disabled { opacity: 0.7; }
+
+#enviar:hover  { filter: brightness(1.07); }
+#enviar:active { transform: scale(0.93); }
+#enviar:disabled { opacity: 0.5; cursor: default; transform: none; filter: none; }
+
+/* =========================================================
+   PAINÉIS (memória, lembretes, avisos)
+   ========================================================= */
 
 #abrir-memoria {
   position: absolute;
@@ -84,8 +250,8 @@ header { position: relative; }
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  background: rgba(43, 42, 40, 0.45);
-  z-index: 10;
+  background: var(--overlay);
+  z-index: 30;
 }
 
 #painel-memoria[hidden] { display: none; }
@@ -96,7 +262,7 @@ header { position: relative; }
   max-height: 80dvh;
   overflow-y: auto;
   padding: 16px;
-  background: #f6f1e9;
+  background: var(--superficie);
   border-radius: 16px 16px 0 0;
 }
 
@@ -122,22 +288,25 @@ header { position: relative; }
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
-  background: #fffdf9;
-  border: 1px solid #ddd3c3;
+  background: var(--superficie-2);
+  border: 1px solid var(--borda);
   border-radius: 12px;
   line-height: 1.4;
 }
 
-#lista-memoria li.vazio { justify-content: center; color: #8a7f6d; }
+#lista-memoria li.vazio { justify-content: center; color: var(--texto-suave); }
 
 #lista-memoria li button {
   padding: 6px 12px;
   font-size: 0.85rem;
-  background: #9b3a2e;
+  background: var(--perigo);
+  color: #fff;
 }
 
+#lista-memoria li span { flex: 1; }
+#lista-memoria li strong.vencido { color: var(--erro); }
 
-/* ---------- Lembretes ---------- */
+/* Lembretes */
 #abrir-lembretes {
   position: absolute;
   left: 12px;
@@ -148,11 +317,7 @@ header { position: relative; }
   letter-spacing: normal;
 }
 
-#lista-memoria li span { flex: 1; }
-#lista-memoria li strong.vencido { color: #9b3a2e; }
-
-
-/* ---------- Avisos ---------- */
+/* Avisos */
 #controles-avisos {
   display: flex;
   flex-wrap: wrap;
@@ -166,8 +331,10 @@ header { position: relative; }
 #controles-avisos span { flex: 1 1 100%; }
 #controles-avisos button { padding: 6px 12px; font-size: 0.85rem; }
 
+/* =========================================================
+   GAVETA (celular) / BARRA LATERAL (desktop)
+   ========================================================= */
 
-/* ---------- Menu lateral ---------- */
 #abrir-menu {
   position: absolute;
   left: 8px;
@@ -177,13 +344,20 @@ header { position: relative; }
   font-size: 1.4rem;
   letter-spacing: normal;
   background: transparent;
-  color: #6b5b45;
+  color: var(--texto-suave);
+}
+
+#fechar-menu {
+  background: var(--verde);
+  color: var(--marrom-escuro);
+  padding: 4px 7px;
+  font-size: 1.2rem;
 }
 
 #fundo-menu {
   position: fixed;
   inset: 0;
-  background: rgba(43, 42, 40, 0.45);
+  background: var(--overlay);
   z-index: 20;
 }
 
@@ -194,13 +368,13 @@ header { position: relative; }
   top: 0;
   left: 0;
   bottom: 0;
-  width: min(75vw, 280px);
+  width: min(75vw, var(--largura-menu));
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  background: #f6f1e9;
-  border-right: 1px solid #ddd3c3;
+  background: var(--superficie);
+  border-right: 1px solid var(--borda);
   z-index: 21;
   transform: translateX(-100%);
   transition: transform 0.25s ease;
@@ -216,12 +390,57 @@ header { position: relative; }
   letter-spacing: 0.3em;
 }
 
-.menu-topo button { background: transparent; color: #6b5b45; padding: 4px 10px; }
+.menu-topo button { background: transparent; color: var(--texto-suave); padding: 4px 10px; }
 
 .item-menu {
   text-align: left;
-  background: #fffdf9;
-  color: #2b2a28;
-  border: 1px solid #ddd3c3;
+  background: var(--superficie-2);
+  color: var(--texto);
+  border: 1px solid var(--borda);
   border-radius: 12px;
+}
+
+/* Seletor de tema (Sistema | Claro | Escuro) dentro da gaveta */
+.seletor-tema {
+  margin-top: auto;            /* empurra para o fim da gaveta */
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--superficie-2);
+  border: 1px solid var(--borda);
+  border-radius: 14px;
+}
+
+.seletor-tema button {
+  flex: 1;
+  padding: 8px 6px;
+  font-size: 0.9rem;
+  background: transparent;
+  color: var(--texto-suave);
+  border-radius: 10px;
+}
+
+.seletor-tema button[aria-pressed="true"] {
+  background: var(--verde);
+  color: var(--marrom-escuro);
+}
+
+/* ---------- Desktop: a gaveta vira barra lateral fixa ---------- */
+@media (min-width: 900px) {
+  body { padding-left: var(--largura-menu); }
+
+  #menu {
+    width: var(--largura-menu);
+    transform: none;
+    transition: none;
+    z-index: 5;                /* painéis (z 30) ficam por cima */
+  }
+
+  #abrir-menu,
+  #fechar-menu,
+  #fundo-menu { display: none !important; }
+
+  /* painel de memória vira janela centralizada */
+  #painel-memoria { align-items: center; }
+  #painel-memoria .cartao { border-radius: 16px; }
 }

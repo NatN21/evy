@@ -53,11 +53,34 @@ async function carregarHistorico() {
   }
 }
 
+// Altura do campo: cresce com o texto até 152px (≈ 5 linhas); depois rola.
+// (O CSS com field-sizing já faz isso nos navegadores novos; isto cobre os demais.)
+const ALTURA_MAXIMA_CAMPO = 152;
+
+function ajustarAlturaDoCampo() {
+  campo.style.height = "auto";
+  campo.style.height = Math.min(campo.scrollHeight, ALTURA_MAXIMA_CAMPO) + "px";
+}
+
+campo.addEventListener("input", ajustarAlturaDoCampo);
+
+// Em computador (mouse/teclado): Enter envia, Shift+Enter quebra linha.
+// No celular: Enter quebra linha e o botão envia.
+const temTecladoFisico = window.matchMedia("(hover: hover) and (pointer: fine)");
+
+campo.addEventListener("keydown", (evento) => {
+  if (evento.key === "Enter" && !evento.shiftKey && !evento.isComposing && temTecladoFisico.matches) {
+    evento.preventDefault();
+    formulario.requestSubmit();
+  }
+});
+
 formulario.addEventListener("submit", async (evento) => {
   evento.preventDefault();
   const texto = campo.value.trim();
   if (!texto) return;
   campo.value = "";
+  campo.style.height = "auto";
   mostrar("user", texto);
   const pensando = mostrar("model", "...");
   campo.disabled = true;
@@ -321,6 +344,27 @@ async function testarAviso() {
 
 document.getElementById("ativar-avisos").addEventListener("click", ativarAvisos);
 document.getElementById("testar-avisos").addEventListener("click", testarAviso);
+
+// ---------- Tema (Sistema / Claro / Escuro) ----------
+const botoesTema = document.querySelectorAll(".seletor-tema button");
+
+function aplicarTema(tema) {
+  if (tema === "claro" || tema === "escuro") {
+    document.documentElement.dataset.tema = tema;
+  } else {
+    tema = "sistema";
+    document.documentElement.removeAttribute("data-tema");
+  }
+  localStorage.setItem("tema", tema);
+  botoesTema.forEach((b) =>
+    b.setAttribute("aria-pressed", String(b.dataset.tema === tema))
+  );
+}
+
+botoesTema.forEach((b) =>
+  b.addEventListener("click", () => aplicarTema(b.dataset.tema))
+);
+aplicarTema(localStorage.getItem("tema") || "sistema");
 
 // ---------- Início ----------
 carregarHistorico();
