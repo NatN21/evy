@@ -135,7 +135,7 @@ header {
 }
 
 .mensagem {
-  max-width: 85%;
+  max-width: 80%;
   padding: 14px 16px;
   line-height: 1.6;
   white-space: pre-wrap;
@@ -143,7 +143,7 @@ header {
 }
 
 /* Balões com "ponta": o canto inferior do lado de quem fala fica reto */
-.mensagem.user  { border-radius: 18px 18px 0 18px; line-height: 1.4; }
+.mensagem.user  { border-radius: 18px 18px 0 18px; line-height: 1.5; }
 .mensagem.model { border-radius: 18px 18px 18px 0; }
 
 .user  { align-self: flex-end;   background: var(--balao-user); }
@@ -169,7 +169,7 @@ header {
   min-width: 0;
   padding: 14px calc(var(--tamanho-botao) + 22px) 14px 18px; /* espaço p/ o botão */
   font-size: 1rem;
-  line-height: 1.4;
+  line-height: 1.6;
   color: var(--texto);
   background: var(--superficie-2);
   border: 1px solid var(--borda);
@@ -186,7 +186,7 @@ header {
 
 #campo:focus {
   outline: none;
-  border-color: var(--ambar);
+  border-color: var(--terracota);
   box-shadow: 0 0 0 3px rgba(255, 178, 36, 0.22);
 }
 
