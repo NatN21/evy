@@ -1,4 +1,27 @@
-@import url('https://fonts.googleapis.com/css2?family=Alice&display=swap');
+/* ---------- Fontes (hospedadas em web/fonts) ---------- */
+@font-face {
+  font-family: "Alice";
+  src: url("fonts/Alice-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "DejaVu Sans";
+  src: url("fonts/DejaVuSans.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "DejaVu Sans";
+  src: url("fonts/DejaVuSans-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
 
 * { box-sizing: border-box; }
 
@@ -30,37 +53,37 @@
 
   /* Tema CLARO (padrão) */
   color-scheme: light;
-  --fundo: var(--bege-fundo);
-  --superficie: #f6f1e9;      /* menu, painéis */
-  --superficie-2: #fffdf9;    /* campo, itens de lista */
-  --borda: #ddd3c3;
-  --texto: var(--marrom-escuro);
-  --texto-suave: #76695a;
-  --balao-user: var(--bege-escuro);
-  --balao-model: var(--bege-claro);
-  --botao: var(--couro);
-  --botao-texto: #fff;
+  --fundo: #EDE0D4;           /* Almond Cream */
+  --superficie: #F3E9DF;      /* menu, painéis */
+  --superficie-2: #F9F3EC;    /* campo, itens de lista */
+  --borda: #DDB892;           /* Tan */
+  --texto: #201A17;           /* Midnight Soil */
+  --texto-suave: #7F5539;     /* Coffee Bean */
+  --balao-user: #E6CCB2;      /* Pale Oak */
+  --balao-model: #F6EEE6;
+  --botao: #7F5539;           /* Coffee Bean */
+  --botao-texto: #EDE0D4;     /* Almond Cream */
   --perigo: var(--terracota);
   --erro: var(--terracota);
-  --overlay: rgba(43, 42, 40, 0.45);
+  --overlay: rgba(32, 26, 23, 0.45);
   --sombra-verde: rgba(131, 172, 49, 0.35);
 }
 
 /* Tema ESCURO forçado pelo usuário */
 :root[data-tema="escuro"] {
   color-scheme: dark;
-  --fundo: #1c1510;
-  --superficie: #271e15;
-  --superficie-2: #33271c;
-  --borda: #46382b;
-  --texto: #f0e4d2;
-  --texto-suave: #b5a58f;
-  --balao-user: #4a3626;
-  --balao-model: #2a2018;
-  --botao: #6b5b45;
-  --botao-texto: #fff;
+  --fundo: #201A17;           /* Midnight Soil */
+  --superficie: #2A211D;
+  --superficie-2: #34271F;
+  --borda: #5C3B2E;        /* Cacao Husk */
+  --texto: #F2C299;        /* Dune Beach */
+  --texto-suave: #E49C69;  /* Apricot Dust */
+  --balao-user: #5C3B2E;   /* Cacao Husk */
+  --balao-model: #2A211D;
+  --botao: #C56C39;        /* Amper Rock */
+  --botao-texto: #201A17;
   --perigo: #9b3a2e;
-  --erro: #e8917f;
+  --erro: #E58A6F;
   --overlay: rgba(0, 0, 0, 0.6);
   --sombra-verde: rgba(131, 172, 49, 0.25);
 }
@@ -69,18 +92,18 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-tema="claro"]):not([data-tema="escuro"]) {
     color-scheme: dark;
-    --fundo: #1c1510;
-    --superficie: #271e15;
-    --superficie-2: #33271c;
-    --borda: #46382b;
-    --texto: #f0e4d2;
-    --texto-suave: #b5a58f;
-    --balao-user: #4a3626;
-    --balao-model: #2a2018;
-    --botao: #6b5b45;
-    --botao-texto: #fff;
+    --fundo: #201A17;           /* Midnight Soil */
+    --superficie: #2A211D;
+    --superficie-2: #34271F;
+    --borda: #5C3B2E;        /* Cacao Husk */
+    --texto: #F2C299;        /* Dune Beach */
+    --texto-suave: #E49C69;  /* Apricot Dust */
+    --balao-user: #5C3B2E;   /* Cacao Husk */
+    --balao-model: #2A211D;
+    --botao: #C56C39;        /* Amper Rock */
+    --botao-texto: #201A17;
     --perigo: #9b3a2e;
-    --erro: #e8917f;
+    --erro: #E58A6F;
     --overlay: rgba(0, 0, 0, 0.6);
     --sombra-verde: rgba(131, 172, 49, 0.25);
   }
@@ -95,8 +118,8 @@ body {
   height: 100dvh;
   display: flex;
   flex-direction: column;
-  font-family: Alice, "Times New Roman", serif;
-  font-weight: 400; /* a Alice só existe no peso 400 */
+  font-family: "DejaVu Sans", Verdana, system-ui, sans-serif;
+  font-size: 15px;
   background: var(--fundo);
   color: var(--texto);
   transition: background-color 0.25s ease, color 0.25s ease;
@@ -104,6 +127,16 @@ body {
 
 /* Botões e campos NÃO herdam a fonte sozinhos */
 button, input, textarea { font-family: inherit; }
+
+/* Títulos em Alice (só existe no peso 400) */
+header span,
+.menu-topo strong,
+#titulo-painel {
+  font-family: Alice, Georgia, serif;
+  font-weight: 400;
+}
+
+#titulo-painel { font-size: 1.2rem; }
 
 header {
   position: relative;

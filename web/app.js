@@ -347,6 +347,8 @@ document.getElementById("testar-avisos").addEventListener("click", testarAviso);
 
 // ---------- Tema (Sistema / Claro / Escuro) ----------
 const botoesTema = document.querySelectorAll(".seletor-tema button");
+const metaTema = document.querySelector('meta[name="theme-color"]');
+const aparelhoEscuro = window.matchMedia("(prefers-color-scheme: dark)");
 
 function aplicarTema(tema) {
   if (tema === "claro" || tema === "escuro") {
@@ -356,6 +358,8 @@ function aplicarTema(tema) {
     document.documentElement.removeAttribute("data-tema");
   }
   localStorage.setItem("tema", tema);
+  const escuro = tema === "escuro" || (tema === "sistema" && aparelhoEscuro.matches);
+  metaTema.setAttribute("content", escuro ? "#201A17" : "#EDE0D4");
   botoesTema.forEach((b) =>
     b.setAttribute("aria-pressed", String(b.dataset.tema === tema))
   );
@@ -363,6 +367,9 @@ function aplicarTema(tema) {
 
 botoesTema.forEach((b) =>
   b.addEventListener("click", () => aplicarTema(b.dataset.tema))
+);
+aparelhoEscuro.addEventListener("change", () =>
+  aplicarTema(localStorage.getItem("tema") || "sistema")
 );
 aplicarTema(localStorage.getItem("tema") || "sistema");
 
