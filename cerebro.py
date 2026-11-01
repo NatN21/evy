@@ -11,7 +11,12 @@ import tempo
 
 load_dotenv()
 
-MODELO = "gemini-3.5-flash-lite"
+MODELOS = [
+    "gemini-3.5-flash-lite",
+    "gemini-3.1-flash-lite",
+    "gemini-3.8-flash",
+    "gemini-3.6-flash",
+]
 PASTA = Path(__file__).parent
 PERSONALIDADE = (PASTA / "personalidade.txt").read_text(encoding="utf-8")
 
@@ -56,8 +61,9 @@ REGRAS_DE_LEMBRETES = (
     "Nunca diga que criou ou apagou um lembrete sem ter usado a ferramenta."
 )
 
-ESPERAS = [3, 8, 15]
+ESPERA = 3
 CODIGOS_TEMPORARIOS = (500, 503, 504)
+CODIGOS_DE_TROCA = (404, 429, 500, 503, 504)
 
 client = genai.Client()
 
@@ -76,13 +82,13 @@ def montar_instrucoes():
     return texto
 
 
-def criar_conversa():
+def criar_conversa(modelo=None):
     historico = [
         types.Content(role=m["papel"], parts=[types.Part(text=m["texto"])])
         for m in memoria.carregar_historico()
     ]
     return client.chats.create(
-        model=MODELO,
+        model=modelo or MODELOS[0],
         config=types.GenerateContentConfig(
             system_instruction=montar_instrucoes(),
             tools=ferramentas.FERRAMENTAS,
@@ -108,14 +114,34 @@ def responder(conversa, mensagem):
     momento = tempo.agora()
     contexto = tempo.montar_contexto(memoria.carregar_ultima_mensagem(), momento)
     texto = f"{contexto}\n{mensagem}"
-    for espera in ESPERAS + [None]:
-        try:
-            resposta = conversa.send_message(texto)
+    resposta = None
+    erro_final = None
+    primeira = True
+    for modelo in MODELOS:
+        for tentativa in range(2):
+            if not primeira:
+                conversa = criar_conversa(modelo)
+            primeira = False
+            try:
+                resposta = conversa.send_message(texto)
+                break
+            except errors.APIError as erro:
+                if erro.code not in CODIGOS_DE_TROCA:
+                    raise
+                erro_final = erro
+                print(f"Falha em {modelo} (erro {erro.code})", flush=True)
+                if erro.code in CODIGOS_TEMPORARIOS and tentativa == 0:
+                    time.sleep(ESPERA)
+                    continue
+                break
+        if resposta is not None:
+            print("Respondeu:", modelo, flush=True)
             break
-        except errors.APIError as erro:
-            if erro.code not in CODIGOS_TEMPORARIOS or espera is None:
-                raise
-            time.sleep(espera)
+    if resposta is None:
+        raise erro_final
+    uso = resposta.usage_metadata
+    if uso:
+        print("Tokens: entrada", uso.prompt_token_count, "saída", uso.candidates_token_count, flush=True)
     memoria.salvar_ultima_mensagem(momento.isoformat())
     salvar(conversa)
     return resposta.text
