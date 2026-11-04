@@ -344,6 +344,7 @@ def extrair_e_validar(arquivo, segredo, destino):
         "dados/estado.json",
         "dados/lembretes.json",
         "dados/inscricoes.json",
+        "dados/dispositivos.json",
         "dados/vapid/private_key.pem",
         "dados/vapid/public_key.pem",
     ]

@@ -65,7 +65,8 @@ def parear(codigo, nome):
         h = _hash(codigo)
         achado = next((c for c in codigos if hmac.compare_digest(c["hash"], h)), None)
         if not achado:
-            _falhas.append(agora)
+            if codigos:
+                _falhas.append(agora)
             return None
         codigos.remove(achado)
         _gravar(ARQ_CODIGOS, codigos)
